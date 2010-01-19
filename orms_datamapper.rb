@@ -293,13 +293,11 @@ class Collection
   property :discriminator, Discriminator, :required => true
   property :node_ids, CommaSeparatedList, :accessor => :protected
 
-  before :save do
-    # ensure proper sub-types
-  end
+  # validate proper sub-types
 
   before :save do
     @nodes ||= []
-    node_ids = @nodes.map do |n|
+    self.node_ids = @nodes.map do |n|
       n = n.node if n.respond_to? :node
       n.id
     end
@@ -308,8 +306,8 @@ class Collection
   after :save, :set_id
 
   def nodes
-    node_ids ||= []
-    @nodes ||= node_ids.map { |node_id| Node.get node_id.to_i }
+    self.node_ids ||= []
+    @nodes ||= self.node_ids.map { |node_id| Node.get node_id.to_i }
   end
 end
 
@@ -364,10 +362,18 @@ n.nodes << Text.first << Table.first
 n.save
 
 puts 'Listing all nodes and associated extensions'
-puts
-
 Node.all.each do |node|
   puts "Node#id => #{node.id}, #{node.extension.class.name}#id => #{node.extension.id}"
-  puts node.extension.nodes if node.extension.respond_to? :nodes
+end
+
+puts
+
+puts 'Listing all collections, associated node and any child nodes'
+Collection.all.each do |collection|
+  #puts "Node#id => #{node.id}, #{node.extension.class.name}#id => #{node.extension.id}"
+  #puts node.extension.nodes.inspect if node.extension.respond_to? :nodes
+  puts collection.inspect
+  puts collection.node.inspect
+  puts collection.nodes.inspect
   puts
 end
