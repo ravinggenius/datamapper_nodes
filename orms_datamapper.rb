@@ -213,6 +213,7 @@ class List
   after :save, :set_id
 
   def items
+    data ||= ''
     @items ||= data.split GLUE
   end
 end
@@ -334,7 +335,8 @@ DataMapper.auto_migrate!
 u = User.new :name => 'Thomas Ingram', :email => 'thomas@ravinggenius.com'
 u.save
 
-n = List.new :data => 'Make this work'
+n = List.new
+n.items << 'Make this work'
 n.title = 'Check out this mighty List!'
 n.user = u
 n.save
@@ -365,8 +367,7 @@ puts 'Listing all nodes and associated extensions'
 puts
 
 Node.all.each do |node|
-  puts node.inspect
-  puts node.extension.inspect
+  puts "Node#id => #{node.id}, #{node.extension.class.name}#id => #{node.extension.id}"
   puts node.extension.nodes if node.extension.respond_to? :nodes
   puts
 end
