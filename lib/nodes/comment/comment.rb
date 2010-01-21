@@ -1,0 +1,2 @@
+class Comment < Collection
+end

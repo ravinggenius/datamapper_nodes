@@ -1,0 +1,2 @@
+class Calendar < Collection
+end

@@ -1,0 +1,2 @@
+class Album < Collection
+end

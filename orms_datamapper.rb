@@ -7,6 +7,14 @@ require 'dm-serializer'
 require 'dm-timestamps'
 require 'dm-types'
 
+class App
+  def self.root
+    Dir.pwd
+  end
+end
+
+config_file = File.new App.root + '/database.yml'
+
 class Blob < DataMapper::Type
   #primitive Text
   primitive String
@@ -20,8 +28,6 @@ class Blob < DataMapper::Type
   #def self.typecast value, property
   #end
 end
-
-config_file = File.new File.expand_path(File.dirname(__FILE__) + '/database.yml')
 
 DataMapper.setup :default, YAML.load(config_file)['datamapper']
 
@@ -133,158 +139,6 @@ module NodeExtension
   end
 end
 
-class UserDetail
-  include DataMapper::Resource
-  include NodeExtension
-
-  property :id, Serial
-
-  after :save, :set_id
-end
-
-class Text
-  include DataMapper::Resource
-  include NodeExtension
-
-  property :id, Serial
-  property :data, Text, :required => true, :lazy => false
-
-  after :save, :set_id
-end
-
-class Code
-  include DataMapper::Resource
-  include NodeExtension
-
-  property :id, Serial
-  property :data, Text, :required => true, :lazy => false
-
-  after :save, :set_id
-end
-
-class Table
-  include DataMapper::Resource
-  include NodeExtension
-
-  property :id, Serial
-  property :caption, String, :required => true
-  property :data, Csv, :required => true, :lazy => false
-  property :has_header_row, Boolean, :required => true, :default => true
-
-  after :save, :set_id
-end
-
-class Link
-  include DataMapper::Resource
-  include NodeExtension
-
-  property :id, Serial
-  property :resource, URI, :required => true
-
-  after :save, :set_id
-end
-
-class Event
-  include DataMapper::Resource
-  include NodeExtension
-
-  property :id, Serial
-  property :starting_at, DateTime, :required => true
-  property :ending_at, DateTime, :required => true
-  property :description, Text
-
-  after :save, :set_id
-end
-
-class List
-  include DataMapper::Resource
-  include NodeExtension
-
-  GLUE = "\n"
-
-  property :id, Serial
-  property :data, Text, :required => true, :lazy => false, :accessor => :protected
-
-  before :save do
-    @items ||= []
-    data = @items.join GLUE
-  end
-
-  after :save, :set_id
-
-  def items
-    data ||= ''
-    @items ||= data.split GLUE
-  end
-end
-
-class Quote
-  include DataMapper::Resource
-  include NodeExtension
-
-  property :id, Serial
-  property :data, Text, :required => true, :lazy => false
-
-  belongs_to :author
-
-  after :save, :set_id
-end
-
-class Author
-  include DataMapper::Resource
-  include NodeExtension
-
-  property :id, Serial
-  property :name, String, :required => true
-  property :born_at, DateTime
-  property :died_at, DateTime
-
-  has n, :quotes
-
-  after :save, :set_id
-end
-
-class Image
-  include DataMapper::Resource
-  include NodeExtension
-
-  property :id, Serial
-  property :thumb, Blob
-  property :data, Blob, :required => true
-
-  after :save, :set_id
-end
-
-class Audio
-  include DataMapper::Resource
-  include NodeExtension
-
-  property :id, Serial
-  property :data, Blob, :required => true
-
-  after :save, :set_id
-end
-
-class Video
-  include DataMapper::Resource
-  include NodeExtension
-
-  property :id, Serial
-  property :data, Blob, :required => true
-
-  after :save, :set_id
-end
-
-class Location
-  include DataMapper::Resource
-  include NodeExtension
-
-  property :id, Serial
-  # ...
-
-  after :save, :set_id
-end
-
 class Collection
   include DataMapper::Resource
   include NodeExtension
@@ -311,21 +165,11 @@ class Collection
   end
 end
 
-class Post < Collection; end
-class Calendar < Collection; end
-class Comment < Collection; end
-class Map < Collection; end
-class Gallery < Collection; end
-class Album < Collection; end
-
-class Page < Collection
-  property :slug, String
-
-  before :save do
-    #unless slug
-      # set slug from node.title
-    #end
-  end
+Dir.foreach File.expand_path(App.root + '/lib/nodes') do |file|
+  next if file.start_with? '.'
+  package_model = App.root + "/lib/nodes/#{file}/#{file}"
+  next if File.exist? package_model
+  require package_model
 end
 
 DataMapper.auto_migrate!
