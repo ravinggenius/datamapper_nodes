@@ -166,9 +166,8 @@ class Collection
 end
 
 Dir.foreach File.expand_path(App.root + '/lib/nodes') do |file|
-  next if file.start_with? '.'
-  package_model = App.root + "/lib/nodes/#{file}/#{file}"
-  next if File.exist? package_model
+  package_model = App.root + "/lib/nodes/#{file}/#{file}.rb"
+  next unless File.exist? package_model
   require package_model
 end
 
