@@ -3,7 +3,6 @@ require 'pp'
 require 'datamapper'
 require 'dm-is-list'
 require 'dm-is-nested_set'
-require 'dm-serializer'
 require 'dm-timestamps'
 require 'dm-types'
 
